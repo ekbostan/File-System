@@ -74,7 +74,48 @@ int fs_mount(const char *diskname)
 
 int fs_umount(void)
 {
-	/* TODO: Phase 1 */
+	//Check if the superblock is empty
+	if(super_block == NULL){
+         return -1;
+
+        }
+	//Check
+        if(block_Write(0,(void*)&super_block) == -1 ||block_write(super_block->root_dir_idx,&rootdir_array == -1 )){
+                return -1;
+
+        }
+        if(super_block->total_num_block > (super_block->num_FAT_blocks)* 2048){
+                 return -1;
+         }
+        for (int i = 0; i < super_block->num_FAT_blocks;i++ )
+        {
+                 if(block_read(i+1, &flat_array[i*2048]) != -1){
+
+                         continue;
+                 }
+                 else
+                         return -1;
+        }
+        int bit_count = 0
+        while(bit_count < 128){
+                memset(rootdir_array[bit_count]->file_name,0,strlen(rootdir_array[bit_count]->file_name))
+                rootdir_array[bit_count]->idx =0;
+                rootdir_array[bit_count]->file_Size =0;
+                bit_count++;
+        }
+        free(flat_array);
+        super_block->total_num_blocks =0;
+        super_block->num_data_blocks = 0;
+        super_block->root_dir_idx =0;
+        super_block->data_init_idx=0;
+        super_block->numt_FAT_blocks =0;
+        memset(super_block->signature,'\0',8);
+        if(block_disk_close == -1){
+                return -1;
+        }
+
+
+        return 0;
 }
 
 int fs_info(void)
