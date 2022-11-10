@@ -7,6 +7,14 @@
 #include "disk.h"
 #include "fs.h"
 
+
+#define FAT_EOC 0XFFFF
+
+// /* TODO: Phase 1 
+// // define data structures corresponding to blocks containing meta-info about file system (superblock, FAT and root directory)
+// // data types to use: stdint.h, such as int8_t, uint8_t, uint16_t, etc
+// // attach attribute "packed" to these data structures
+
 struct __attribute__ ((__packed__)) superblock{
     char sign[8];
     uint16_t total_num_blocks;
@@ -25,10 +33,13 @@ struct __attribute__ ((__packed__)) rootdir{
     uint16_t idx;
     uint8_t padding[10];
 };
+
 struct superblock* super_block;
 struct FAT* flat_array;
-struct rootdir* rootdir_array;
+struct rootdir rootdir_array[128];
 char signature[8]="ECS150FS";
+
+int file_count = 0;
 
 int fs_mount(const char *diskname)
 { 
@@ -36,7 +47,7 @@ int fs_mount(const char *diskname)
             return -1;
 	}
 	super_block = malloc(4096);
-	rootdir_array = malloc(4096);
+	
 	if(block_read(0, (void*)super_block) == -1){
 			return -1;
 	}
@@ -57,13 +68,14 @@ int fs_mount(const char *diskname)
 		}
 		
 	}
-	if(block_read(super_block->root_dir_idx,(void*)rootdir_array) == -1){
+	if(block_read(super_block->root_dir_idx,&rootdir_array) == -1){
 			return -1;
    	}
 
     return 0;
 
 }
+
 
 int fs_umount(void)
 {	
@@ -89,9 +101,9 @@ int fs_umount(void)
                          return -1;
         }
 
-        memset(rootdir_array->file_name,0,16);
-        rootdir_array->idx =0;
-        rootdir_array->file_size =0;
+        memset(rootdir_array[0].file_name,0,16);
+        rootdir_array[0].idx = 0;
+        rootdir_array[0].file_size =0;
         free(flat_array);
         super_block->total_num_blocks =0;
         super_block->num_data_blocks = 0;
@@ -108,6 +120,14 @@ int fs_umount(void)
 
 int fs_info(void)
 {
+	// FS Info:
+	// total_blk_count=8198
+	// fat_blk_count=4
+	// rdir_blk=5
+	// data_blk=6
+	// data_blk_count=8192
+	// fat_free_ratio=8191/8192
+	// rdir_free_ratio=128/128
     printf("FS Info:\n");
     printf("total_blk_count=%d\n",super_block->total_num_blocks);
     printf("fat_blk_count=%d\n",super_block->num_FAT_blocks);
@@ -115,51 +135,106 @@ int fs_info(void)
     printf("data_blk=%d\n",super_block->data_init_idx);
     printf("data_blk_count=%d\n",super_block->num_data_blocks);
 	
-  int while_counter = 0;
-
-    // THIS PART IS THE ONLY PART WE ARE MISSING
     // Cuz we are getting you can not compare a struct with an integer at the line flat_array[i] == 0
-    /*int fat_counter = 0;
-     int while_counter = 0;
- 	while(while_counter < super_block->total_num_blocks)
+    int fat_counter = 0;
+    int i = 0, while_counter = 0;
+ 	while(while_counter < super_block->num_data_blocks)
 	{
-		if(flat_array[i] == 0)
+		//printf("enteered while loop\n");
+		if(flat_array[i].data_block == 0)
 		{
+			//printf("data block is 0 %d\n", i);
 			fat_counter = fat_counter + 1;
 		}
+		i++;
+		while_counter++;
 	}
-
-  	printf("fat_free_ratio=%d/%d\n", fat_counter, super_block->total_num_blocks);
-  */
+  	printf("fat_free_ratio=%d/%d\n", fat_counter, super_block->num_data_blocks);
+	//printf("root dir %s\n", rootdir_array[0].file_name);
 	int root_num = 0;
 	while_counter = 0;
 	while(while_counter<128) 
 	{
-		if(rootdir_array->file_size == 0)
+		//printf("while loop\n");
+		if(rootdir_array[while_counter].file_size == 0)
 		{
+			//printf("while counter\n");
 			root_num = root_num + 1;
 		}
 		while_counter++;
 	} 
 	printf("rdir_free_ratio=%d/%d\n", root_num,128);
+	//printf("root dir %s\n", rootdir_array[0]->file_name);
 	return 0;
 }
 
+
+
 int fs_create(const char *filename)
 {
-	
+	if(filename == NULL){
+		return -1;
+	}
+	if(strlen(filename)>16){
+		return -1;
+	}
+	printf("fs create 1\n");
+	int counter =0;
+	  while(counter < 128){
+                if(strcmp(rootdir_array[counter].file_name,filename) == 0){
+			printf("File already created \n");
+                        return -1;
+                }
+                else{
+			printf("File newly created \n");
+                        counter++;
+                }
+	  }
+	counter = 0;
+	while(counter < 128){
+		if(*rootdir_array[counter].file_name == '\0'){
+			strcpy(rootdir_array[counter].file_name, filename);
+			rootdir_array[counter].file_size = 0;
+			rootdir_array[counter].idx =FAT_EOC ;
+			counter++;
+			break;
+		}
+		else{
+			counter++;
+		}
+	}
 	return 0;
 }
 
 int fs_delete(const char *filename)
 {
-	/* TODO: Phase 2 */
+ int counter =0;
+          while(counter < 128){
+                if(strcmp(rootdir_array[counter].file_name,filename) == 0){
+                        strcpy(rootdir_array[counter].file_name,'\0');
+                        return 0;
+                }
+                else{
+                        printf("File newly created \n");
+                        counter++;
+                }
+          }
+	
 	return 0;
 }
 
 int fs_ls(void)
 {
 	/* TODO: Phase 2 */
+	fs_create("EROL");
+	
+	fs_create("EROL");
+		int i =0;
+		while(i<128){
+		printf("file number%d : %s\n",i ,rootdir_array[i].file_name);
+		i++;
+		}
+
 	return 0;
 }
 
