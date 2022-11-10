@@ -1,3 +1,12 @@
+// FS Info:
+// total_blk_count=8198
+// fat_blk_count=4
+// rdir_blk=5
+// data_blk=6
+// data_blk_count=8192
+// fat_free_ratio=8191/8192
+// rdir_free_ratio=128/128
+
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -209,26 +218,49 @@ int fs_create(const char *filename)
 int fs_delete(const char *filename)
 {
  int counter =0;
+ int fat_array_idx;
+ int present = 0;
+ printf("1ST step\n");
           while(counter < 128){
                 if(strcmp(rootdir_array[counter].file_name,filename) == 0){
-                        strcpy(rootdir_array[counter].file_name,'\0');
-                        return 0;
+		       printf("2nd step\n");
+			memset(rootdir_array[counter].file_name, '\0',strlen(filename));
+			rootdir_array[counter].file_size = 0;
+                     	fat_array_idx = rootdir_array[counter].idx;
+			present =1 ;
+			printf("File deleted\n");	
+		       	break;
                 }
                 else{
                         printf("File newly created \n");
                         counter++;
                 }
           }
-	
+	  if(present != 1 ){printf("File name does not exist\n");return -1;}
+	  
+	  
+	  rootdir_array[counter].idx = 0;
+	  int flat_arr_next_idx = 0;
+	  printf("Before while\n");
+	  while(flat_arr_next_idx != FAT_EOC){
+	  	flat_arr_next_idx = flat_array[fat_array_idx].data_block;	
+		flat_array[fat_array_idx].data_block = 0;
+		fat_array_idx = flat_arr_next_idx;
+		printf("Infinite loop\n");
+	  }
 	return 0;
 }
 
 int fs_ls(void)
 {
 	/* TODO: Phase 2 */
-	fs_create("EROL");
+//	fs_create("EROL");
 	
-	fs_create("EROL");
+//	fs_create("EROL");
+	fs_delete("EKB1");
+	//fs_create("EKB2");
+
+
 		int i =0;
 		while(i<128){
 		printf("file number%d : %s\n",i ,rootdir_array[i].file_name);
