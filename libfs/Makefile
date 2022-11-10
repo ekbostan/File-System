@@ -1,6 +1,17 @@
 # Target library
+objs :=  fs.o disk.o
 lib := libfs.a
+CC := gcc
+CFLAGS := -Wall -Werror -g
+deps := $(patsubst %.o,%.d,$(objs))
+-include $(deps)
+DEPFLAGS = -MMD -MF $(@:.o=.d)
 
-all: $(lib)
+libfs.a: $(objs)
+		ar rcs libfs.a $(objs)
 
-## TODO: Phase 1
+%.o: %.c
+	$(Q)$(CC) $(CFLAGS) -c -o $@ $< $(DEPFLAGS)
+
+clean:
+	$(Q)rm -rf fs.o disk.o  $(deps) $(targets)     

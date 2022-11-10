@@ -13,7 +13,7 @@
  * Open virtual disk file @diskname. A virtual disk file must be opened before
  * blocks can be read from it with block_read() or written to it with
  * block_write().
- *
+ * 
  * Return: -1 if @diskname is invalid, if the virtual disk file cannot be opened
  * or is already open. 0 otherwise.
  */
