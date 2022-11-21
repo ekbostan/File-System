@@ -1,12 +1,12 @@
 # Target library
 # Target library
-objs :=  fs.o disk.o
+objs := fs.o disk.o
 lib := libfs.a
 CC := gcc
 CFLAGS := -Wall -Werror -g
 deps := $(patsubst %.o,%.d,$(objs))
 -include $(deps)
-DEPFLAGS = -MMD -MF $(@:.o=.d)
+DEPFLAGS =-MMD-MF$(@:.o=.d)
 
 libfs.a: $(objs)
         ar rcs libfs.a $(objs)
