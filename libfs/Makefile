@@ -1,5 +1,4 @@
 # Target library
-# Target library
 objs := fs.o disk.o
 lib := libfs.a
 CC := gcc
@@ -15,4 +14,4 @@ libfs.a: $(objs)
         $(Q)$(CC) $(CFLAGS) -c -o $@ $< $(DEPFLAGS)
 
 clean:
-        $(Q)rm -rf fs.o disk.o  $(deps) $(targets)
+       $(Q)rm -rf fs.o disk.o  $(deps) $(targets)
