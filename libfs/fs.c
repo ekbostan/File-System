@@ -249,14 +249,15 @@ int fs_delete(const char *filename)
 	  
 	  
 	  rootdir_array[counter].idx = 0;
-	  int flat_arr_next_idx = 0;
-	  //printf("Before while\n");
-	  while(flat_arr_next_idx != FAT_EOC){
-	  	flat_arr_next_idx = flat_array[fat_array_idx].data_block;	
-		flat_array[fat_array_idx].data_block = 0;
-		fat_array_idx = flat_arr_next_idx;
-		//printf("Infinite loop\n");
-	  }
+	 int data_block_count = rootdir_array[counter].file_size*2/4096;
+
+ //There are as many entries as data blocks in the disk.
+        for (int j = 0; j < data_block_count; j++){
+                if (flat_array[j].data_block != FAT_EOC){
+                        flat_array[j].data_block = 0;
+                }
+        }
+
 	return 0;
 }
 
@@ -281,13 +282,56 @@ int fs_ls(void)
 
 int fs_open(const char *filename)
 {
-	/* TODO: Phase 3 */
-	return 0;
+	   int i = 0;
+        if (filename == NULL || strlen(filename) > 16){
+                return -1;
+        }
+        if(strcmp(filename,"") == 0){
+                return -1;
+        }
+        if(fd_count >31){
+                return -1;
+
+        }
+        while (i < 128) {
+                if(rootdir_array[i].file_name != filename){
+                        
+                        break;
+                }
+                i++;
+        }
+        int j = 0;
+
+        while(j<31){
+                if (strcmp(fd_arr[j].file_name,"")==0){
+                        fd_arr[j].idx = j;
+                        fd_arr[j].offset = 0;
+                        strcpy(fd_arr[j].file_name,filename);
+                     
+                        return fd_arr[j].idx;
+                }
+                j++;
+        }
+        fd_count++;
+
+        return -1;
+	
 }
 
 int fs_close(int fd)
 {
-	/* TODO: Phase 3 */
+	   if(fd == -1){
+                return -1;
+        }
+        if(fd >31){
+                return -1;
+        }
+        else{
+                fd_arr[fd].idx = -1;
+                fd_arr[fd].offset = 0;
+                strcpy(fd_arr[fd].file_name,"");
+        }
+
 	return 0;
 }
 
