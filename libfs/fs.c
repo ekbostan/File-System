@@ -227,7 +227,7 @@ int fs_create(const char *filename)
 int fs_delete(const char *filename)
 {
  int counter =0;
- int fat_array_idx;
+
  int present = 0;
 
           while(counter < 128){
@@ -235,7 +235,6 @@ int fs_delete(const char *filename)
 		      
 			memset(rootdir_array[counter].file_name, '\0',strlen(filename));
 			rootdir_array[counter].file_size = 0;
-                     	fat_array_idx = rootdir_array[counter].idx;
 			present =1 ;
 			
 		       	break;
