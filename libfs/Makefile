@@ -5,7 +5,7 @@ CC := gcc
 CFLAGS := -Wall -Werror -g
 deps := $(patsubst %.o,%.d,$(objs))
 -include $(deps)
-DEPFLAGS =-MMD-MF$(@:.o=.d)
+DEPFLAGS =-MMD -MF $(@:.o=.d)
 
 libfs.a: $(objs)
         ar rcs libfs.a $(objs)
