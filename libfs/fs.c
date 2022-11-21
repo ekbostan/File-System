@@ -42,11 +42,20 @@ struct __attribute__ ((__packed__)) rootdir{
     uint16_t idx;
     uint8_t padding[10];
 };
+struct __attribute__ ((__packed__)) fd{
+        char file_name[16];
+        uint16_t offset;
+        int idx;
+
+};
+
 
 struct superblock* super_block;
 struct FAT* flat_array;
 struct rootdir rootdir_array[128];
 char signature[8]="ECS150FS";
+struct fd fd_arr[32];
+int fd_count =0;
 
 int file_count = 0;
 
@@ -187,15 +196,15 @@ int fs_create(const char *filename)
 	if(strlen(filename)>16){
 		return -1;
 	}
-	printf("fs create 1\n");
+	
 	int counter =0;
 	  while(counter < 128){
                 if(strcmp(rootdir_array[counter].file_name,filename) == 0){
-			printf("File already created \n");
+			
                         return -1;
                 }
                 else{
-			printf("File newly created \n");
+			
                         counter++;
                 }
 	  }
@@ -220,33 +229,33 @@ int fs_delete(const char *filename)
  int counter =0;
  int fat_array_idx;
  int present = 0;
- printf("1ST step\n");
+
           while(counter < 128){
                 if(strcmp(rootdir_array[counter].file_name,filename) == 0){
-		       printf("2nd step\n");
+		      
 			memset(rootdir_array[counter].file_name, '\0',strlen(filename));
 			rootdir_array[counter].file_size = 0;
                      	fat_array_idx = rootdir_array[counter].idx;
 			present =1 ;
-			printf("File deleted\n");	
+			
 		       	break;
                 }
                 else{
-                        printf("File newly created \n");
+                       
                         counter++;
                 }
           }
-	  if(present != 1 ){printf("File name does not exist\n");return -1;}
+	  if(present != 1 ){return -1;}
 	  
 	  
 	  rootdir_array[counter].idx = 0;
 	  int flat_arr_next_idx = 0;
-	  printf("Before while\n");
+	  //printf("Before while\n");
 	  while(flat_arr_next_idx != FAT_EOC){
 	  	flat_arr_next_idx = flat_array[fat_array_idx].data_block;	
 		flat_array[fat_array_idx].data_block = 0;
 		fat_array_idx = flat_arr_next_idx;
-		printf("Infinite loop\n");
+		//printf("Infinite loop\n");
 	  }
 	return 0;
 }
@@ -257,7 +266,7 @@ int fs_ls(void)
 //	fs_create("EROL");
 	
 //	fs_create("EROL");
-	fs_delete("EKB1");
+	//fs_delete("EKB1");
 	//fs_create("EKB2");
 
 
@@ -285,13 +294,48 @@ int fs_close(int fd)
 int fs_stat(int fd)
 {
 	/* TODO: Phase 3 */
-	return 0;
+	char *file_name = fd_arr[fd].file_name;
+        if(fd == -1){
+                return -1;
+        }
+        if(fd >31){
+                return -1;
+        }
+        int j =0;
+        while(j<31){
+                if(strcmp(rootdir_array[j].file_name,file_name) != 0){
+                        j++;
+                        continue;
+                }
+                else{
+                         return rootdir_array[j].file_size;
+                }
+        }
+        return -1;
 }
 
 int fs_lseek(int fd, size_t offset)
 {
-	/* TODO: Phase 3 */
-	return 0;
+	if (fd == -1){
+                return -1;
+        }
+        else if (fd > 31){
+                return -1;
+        }
+        else if ((uint16_t*)offset < 0){
+                return -1;
+        }
+        else if (offset > rootdir_array[fd].file_size){
+                return -1;
+        }
+        else{
+                //printf("offset before %d\n", fd_arr[fd].offset);
+                fd_arr[fd].offset = offset;
+               // printf("offset after %d\n", fd_arr[fd].offset);
+        }
+
+        return 0;
+
 }
 
 int fs_write(int fd, void *buf, size_t count)
