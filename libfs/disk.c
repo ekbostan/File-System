@@ -101,9 +101,12 @@ int block_write(size_t block, const void *buf)
 
 	/* Move to the specified block number */
 	if (lseek(disk.fd, block * BLOCK_SIZE, SEEK_SET) < 0) {
+		//printf("lseek successful\n");
 		perror("lseek");
 		return -1;
 	}
+
+	printf("about to write %s %ld\n", (char*)buf, block* BLOCK_SIZE);
 
 	/* Perform the actual write into the disk image */
 	if (write(disk.fd, buf, BLOCK_SIZE) < 0) {

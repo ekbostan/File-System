@@ -183,3 +183,22 @@ int fs_write(int fd, void *buf, size_t count);
 int fs_read(int fd, void *buf, size_t count);
 
 #endif /* _FS_H */
+
+
+// MOUNT successful.
+// CREATE successful.
+// OPEN successful.
+// Wrote 5 bytes to file.
+// SEEK successful.
+// Read 5 bytes from file. Compared 5 correct.
+// Wrote 5 bytes to file.
+// SEEK successful.
+// Read 5 bytes from file. Compared 5 correct.
+// SEEK successful.
+// Wrote 4096 bytes to file.
+// SEEK successful.
+// Read 5 bytes from file. Compared 5 correct.
+// Read 4096 bytes from file. Compared 4096 correct.
+// CLOSE successful.
+// DELETE successful.
+// UMOUNT successful.
