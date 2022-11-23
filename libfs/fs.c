@@ -391,45 +391,6 @@ int fs_write(int fd, void *buf, size_t count)
 
 int fs_read(int fd, void *buf, size_t count)
 {
-	char bounce_buffer[4096];
-        int  offset = fd_arr[fd].offset;
-
-
-        if (fd == -1 || fd > 31 || buf == NULL|| count<= 0){
-                        return -1;
-        }
-        int block_idx_to_read = offset % BLOCK_SIZE;
-        int av_idx_in_flat_arr = 0;
-
-        for (int i = 0; i < super_block->num_data_blocks; i++){
-                if (flat_array[i].data_block <= 0){
-                        av_idx_in_flat_arr = i;
-                        break;
-                }
-        }
-
-        int num_blocks_to_read = (count / BLOCK_SIZE) + 1;
-        int shift_count = 0;
-
-        for (int j = 0; j < num_blocks_to_read; j++){
-                //block size has enough space to read
-                if (BLOCK_SIZE >= num_blocks_to_read + block_idx_to_read){
-                        shift_count = count;
-                }
-                else{
-                        shift_count = BLOCK_SIZE - block_idx_to_read;
-                }
-
-
-                block_read(super_block->data_init_idx + av_idx_in_flat_arr, (void*)bounce_buffer);
-                memcpy(buf, bounce_buffer, count);
-
-        }
-        int ret_val = shift_count;
-
-
-
-        fd_arr[fd].offset = fd_arr[fd].offset + shift_count;
-        return ret_val;
+	
 
 }
