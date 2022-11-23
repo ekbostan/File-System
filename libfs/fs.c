@@ -392,7 +392,8 @@ int fs_read(int fd, void *buf, size_t count)
 {
         size_t offset = fd_arr[fd].offset;
 
-        char bounce_buffer[4096];
+         void *bounce_buffer = malloc(4096);
+         memset(bounce_buffer, 0, 4096);
 
         int block_idx = offset / 4096;
 
