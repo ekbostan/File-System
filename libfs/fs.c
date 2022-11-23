@@ -390,104 +390,67 @@ int fs_write(int fd, void *buf, size_t count)
 
 int fs_read(int fd, void *buf, size_t count)
 {
-	/* TODO: Phase 4 */
-	char bounce_buffer[4096];
-	char* file_name = fd_arr[fd].file_name;
-	int  offset = fd_arr[fd].offset;
+        size_t offset = fd_arr[fd].offset;
 
+        char bounce_buffer[4096];
+
+        int block_idx = offset / 4096;
+
+        int byt_num = offset % 4096;
+
+        int read_num_count;
+        int shift_count = 0;
+        char *buffer_read = (char *)buf;
+
+        int fat_idx = 0;
+
+        if (fd == -1 || fd > 31 || buf == NULL|| count<= 0){
+                        return -1;
+        }
+        int root_dir_number;
+        for(int i = 0; i<128; i++){
+
+                if(strcmp(rootdir_array[i].file_name, fd_arr[fd].file_name) == 0){
+                        root_dir_number = i;
+                        break;
+                }
+        }
+
+                read_num_count = count;
+
+        size_t num_blocks_to_read = 1+ (count / 4096);
+        int j = 0;
+        int fat_loop_idx = rootdir_array[root_dir_number].idx;
+        while(j < block_idx){
+
+                if(rootdir_array[root_dir_number].idx != FAT_EOC){
+                        fat_loop_idx = flat_array[fat_loop_idx].data_block;
+                }
+                else{
+                        return -1;
+
+                }
+                j++;
+        }
+
+        fat_idx = fat_loop_idx;
+        int z = 0;
+        while(z < num_blocks_to_read){
+                if(BLOCK_SIZE >= num_blocks_to_read + read_num_count){
+                        shift_count = count;
+                 }
+                 else{
+                        shift_count = BLOCK_SIZE - read_num_count;
+                 }
+                 block_read(super_block->data_init_idx + fat_idx, (void*)bounce_buffer);
+                 memcpy(buffer_read, bounce_buffer + byt_num,shift_count);
+                 z++;
+        };
+        fd_arr[fd].offset = fd_arr[fd].offset + count;
+        return count;
 	
 
-	if (fd == -1 || fd > 31 || buf == NULL|| count<= 0){
-			return -1;
-	}
 
-	int root_dir_idx = 0;
-
-	for(int i = 0; i < 128; i++){
-		if(rootdir_array[i].file_name == file_name){
-				root_dir_idx = i;
-				
-				break;
-			}
-	}
-
-	// int block_to_write = offset / BLOCK_SIZE;
-	int block_idx_to_read = offset % BLOCK_SIZE;
-
-	int av_idx_in_flat_arr = 0;
-
-	//printf("flat array size: %d\n", flat_array[99].data_block);
-
-	//find empty flat arr index
-	for (int i = 0; i < super_block->num_data_blocks; i++){
-		if (flat_array[i].data_block <= 0){
-			
-			av_idx_in_flat_arr = i;
-			break;
-		}
-	}
-
-	int num_blocks_to_read = (count / BLOCK_SIZE) + 1;
-	int shift_count = 0;
-	//, num_bytes_read = 0;
-
-	printf("num blocks to read: %d\n", num_blocks_to_read);
-	printf("av_idx_in_flat_arr: %d\n", av_idx_in_flat_arr);
-
-	for (int j = 0; j < num_blocks_to_read; j++){
-		//block size has enough space to read
-		if (BLOCK_SIZE >= num_blocks_to_read + block_idx_to_read){
-			shift_count = count;
-		}
-		else{
-			shift_count = BLOCK_SIZE - block_idx_to_read;
-		}
-
-		block_read(super_block->data_init_idx + av_idx_in_flat_arr, (void*)bounce_buffer);
-	
-
-		memcpy(buf, bounce_buffer, count);
-		//num_bytes_read = count;
-	
-
-	}
-
-	struct rootdir *file_dir = &rootdir_array[root_dir_idx];
-	//char* final_buf = (char*)buf;
-	//int i = super_block->data_init_idx;
-	int16_t it_idx = file_dir->idx;
-	int read_count = count;
-
-	int loopvar = 0;
-
-	while(loopvar < (offset/4096)){
-		if(it_idx != FAT_EOC){
-				it_idx = flat_array[it_idx].data_block;
-		}
-		else{
-				return -1;
-		}
-		loopvar++;
-
-	}
-
-	if(file_dir->file_size > count + offset){
-		read_count = count;
-		
-	}
-	else{
-		if(file_dir->file_size - offset < 0){
-			read_count = offset-file_dir->file_size;
-
-		}
-		else{
-			read_count = file_dir->file_size - offset;
-		}
-	}
-
-
-	fd_arr[fd].offset = fd_arr[fd].offset + shift_count;
-	return read_count;
 	
 
 }
