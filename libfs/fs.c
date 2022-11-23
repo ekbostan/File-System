@@ -383,7 +383,8 @@ int fs_lseek(int fd, size_t offset)
 
 int fs_write(int fd, void *buf, size_t count)
 {
-	/* TODO: Phase 4 */
+	
+	/*
 	if (fd == -1 || fd > 31 || buf == NULL){
                 return -1;
         }
@@ -459,7 +460,7 @@ if(file_dir->idx != FAT_EOC){
 		   printf("IN Third while\n");
 	idx_of_data_block = flat_array[idx_of_data_block].data_block;
 	 printf("idx_of_data_block.data_block %d\n",idx_of_data_block);
-	}*/
+	}
 	int g =0;
 	   printf("4th  while\n");
 	while(g<avaliable_num){
@@ -534,7 +535,7 @@ while(loopvar< to_Write){
     byte_written_count = byte_written_count + shift_count;
 	loopvar++;
 }
-
+*/
 	return 0;
 
 }
