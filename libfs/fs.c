@@ -393,7 +393,7 @@ int fs_read(int fd, void *buf, size_t count)
 {
 	char bounce_buffer[4096];
         int  offset = fd_arr[fd].offset;
-        printf("in read function\n");
+
 
         if (fd == -1 || fd > 31 || buf == NULL|| count<= 0){
                         return -1;
