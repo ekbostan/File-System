@@ -384,8 +384,191 @@ int fs_lseek(int fd, size_t offset)
 int fs_write(int fd, void *buf, size_t count)
 {
 	
+	/* TODO: Phase 4 */
+	if (fd == -1 || fd > 31 || buf == NULL){
+		return -1;
+	}
+
+	//read @count bytes of data from the file referenced by file
+	//descriptor @fd into buffer pointer by @buf
+	char* file_name = fd_arr[fd].file_name;
+	uint16_t  offset = fd_arr[fd].offset;
+
+	int root_idx = 0 ;
+	for(int i =0; i<128; i++){
+		if(rootdir_array[i].file_name == file_name){
+			root_idx = i;
+			printf("Index of the file in the root directory: %d\n",root_idx);
+			break;
+		}
+	}
+
+	struct rootdir *file_dir = &rootdir_array[root_idx];
+	int num_use_blocks = 0;
+	int loop_cond = offset / BLOCK_SIZE ;
+	int loop_var = 0;
+	int fat_idx = file_dir->idx;
+	int fat_iter_var = fat_idx;
+	printf("loop cond: %d, offset: %d\n", loop_cond, offset);
+
+	if(loop_cond == 0){
+		printf("offset 0\n");
+		printf("fat iter var: %d\n", fat_iter_var);
+		printf("fat iter data block 1: %d\n", flat_array[1].data_block);
+		
+		fat_iter_var = flat_array[loop_var].data_block;
+		printf("fat iter data block: %d\n", flat_array[loop_var].data_block);
+	}
+	else{
+		while (loop_var < loop_cond){
+			printf("In the First while\n");
+			if(fat_iter_var == FAT_EOC) {
+				printf("fat iter var is FAT EOC\n");
+				return -1;
+			}
+			printf("fat iter var not FAT EOC: %d\n", fat_iter_var);
+			printf("fat iter data block: %d\n", flat_array[fat_iter_var].data_block);
+			fat_iter_var = flat_array[fat_iter_var].data_block;
+			loop_var++;
+		}
+	}
+
 	
-	return 0;
+
+	if(file_dir->file_size == 0){
+		num_use_blocks = (offset % 4096)+count;
+		num_use_blocks = (num_use_blocks/4096)+1;
+	}
+	else
+	{
+		num_use_blocks = (offset + 4096* ((((offset % 4096)+ count)/4096)+1))/4096;
+		num_use_blocks = num_use_blocks -1 - (file_dir->file_size/4096);
+	
+	}	
+
+	int fat_arr[num_use_blocks];
+	int z = 0 ;
+	int remaining_data_blocks = 0;
+	//printf("SECOND  while\n");
+	printf("num use blocks: %d\n",num_use_blocks);
+	printf("super_block->num_data_blocks : %d\n",super_block->num_data_blocks);
+	while(z < super_block->num_data_blocks){
+		//printf("In the First while\n");
+		//printf("z: %d\n",z);
+
+		if(flat_array[z].data_block == 0){
+			fat_arr[remaining_data_blocks] = z;
+			remaining_data_blocks++;
+			printf("remain data blocks: %d\n",remaining_data_blocks);
+		}
+
+		if(num_use_blocks == remaining_data_blocks){
+			break;
+		}
+		z++;
+	}
+
+	int avaliable_num = remaining_data_blocks;
+	int idx_of_data_block = file_dir->idx;
+ 	printf("idx_of_data_block.data_block %d\n",idx_of_data_block);
+	if(file_dir->idx != FAT_EOC){
+		printf("Third while\n");
+		/*
+		while(idx_of_data_block != FAT_EOC){
+			printf("IN Third while\n");
+			idx_of_data_block = flat_array[idx_of_data_block].data_block;
+			printf("idx_of_data_block.data_block %d\n",idx_of_data_block);
+		}
+		*/
+
+		int g =0;
+	   	printf("4th  while\n");
+		while(g < avaliable_num){
+			printf("IN THE 4TH WHILEe\n");
+			printf("idx_of_data_block.data_block %d\n",flat_array[idx_of_data_block].data_block);	   
+			//flat_array[idx_of_data_block].data_block = fat_arr[g];
+			// idx_of_data_block = flat_array[idx_of_data_block].data_block;
+			g++;
+		}
+
+	flat_array[idx_of_data_block].data_block = 0;
+	}
+
+	else{
+
+		fat_idx = fat_arr[0];
+		file_dir->idx = fat_idx;
+	}
+
+
+	int free_blocks = 1;
+	int num_free_blocks = 0;
+	while(free_blocks< super_block->num_data_blocks){
+		if(flat_array[free_blocks].data_block != 0){
+			free_blocks++;
+			continue;}
+		else{
+			num_free_blocks++;
+		
+		}
+		free_blocks++;
+	}
+	printf("num_free_blocks %d\n",num_free_blocks);
+
+	int to_Write = (((count+(offset%4096)) /4096) + 1);
+	if(to_Write > num_free_blocks){
+		to_Write = num_free_blocks;
+	}
+
+	printf("which block to write: %d \n",to_Write);
+
+	int shift_count =0;
+	char *write_buffer = (char*)buf;
+	char bounce_buffer[BLOCK_SIZE];
+	int loopvar = 0;
+	int count_write = to_Write -1;
+	int byte_written_count = 0;
+
+	while(loopvar< to_Write){
+		if (4096 > (fd_arr[fd].offset%4096 + count)){
+				shift_count = count;
+		}
+		else{
+			shift_count = 4096 - fd_arr[fd].offset%4096;
+		}
+
+		printf("flat arr: %d\n",flat_array[1].data_block);
+
+
+		memcpy(bounce_buffer + fd_arr[fd].offset%BLOCK_SIZE, write_buffer, shift_count);
+		printf("bounce_buffer: %s, fd_arr[fd].offset/BLOCK_SIZE: %d, write_buffer: %s, shift_count: %d\n", (char*)bounce_buffer,fd_arr[fd].offset/BLOCK_SIZE,(char*) write_buffer, shift_count );
+		printf("write index that does not write : %d, fat_index = %d, sb = %d\n",fat_idx + super_block->data_init_idx, fat_idx, super_block->data_init_idx);	
+		fat_idx = 0;
+		block_write(fat_idx + super_block->data_init_idx,(char*)write_buffer);
+		printf("bounce buffer %s\n",(char*)bounce_buffer); 
+		printf("BUF: %s\n",(char*) write_buffer);
+
+
+		if(loopvar > count_write){
+			flat_array[fat_idx].data_block = FAT_EOC;
+			fat_idx = flat_array[fat_idx].data_block;
+			if(fat_idx != FAT_EOC){return -1;}
+		}
+		else{
+			flat_array[fat_idx].data_block = flat_array[loopvar +1].data_block;
+			fat_idx = flat_array[fat_idx].data_block;
+		}
+		
+		byte_written_count = byte_written_count + shift_count;
+		loopvar++;
+	}
+
+	printf("bytes written: %d\n", byte_written_count);
+	printf("buf: %s\n", (char*)buf);
+
+	fd_arr[fd].offset += byte_written_count;
+	fd_arr[fd].file_size += byte_written_count;
+	return byte_written_count;
 
 }
 
