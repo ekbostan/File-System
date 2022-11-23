@@ -472,8 +472,6 @@ int fs_read(int fd, void *buf, size_t count)
 
 	}
 
-
-	file_dir->file_size = fd_arr[fd].file_size;
 	if(file_dir->file_size > count + offset){
 		read_count = count;
 		
