@@ -58,7 +58,8 @@ struct fd fd_arr[32];
 int fd_count =0;
 
 int file_count = 0;
-
+// fs_mount() makes the file system contained in the specified virtual disk “ready to be used”. 
+//You need to open the virtual disk, using the block API, and load the meta-information that is necessary to handle the file system operations 
 int fs_mount(const char *diskname)
 { 
 	if(block_disk_open(diskname) == -1){
