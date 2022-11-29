@@ -4,6 +4,8 @@
 //Exactly like real hard drives which are split into sectors, the virtual disk is logically split into blocks. The first software layer involved in the file system implementation is the block API and is provided to you. This block API is used to open or close a virtual disk, and read or write entire blocks from it.
 
 //Above the block layer, the FS layer is in charge of the actual file system management. Through the FS layer, you can mount a virtual disk, list the files that are part of the disk, add or delete new files, read from files or write to file
+
+//FILE SYSYTEM - is abstraction that the operating system uses to control how data is stored and retrieved.[
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
