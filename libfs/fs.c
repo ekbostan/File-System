@@ -394,7 +394,9 @@ int fs_lseek(int fd, size_t offset)
 
 int fs_write(int fd, void *buf, size_t count)
 {
-	
+	//You will probably need to first read the block from disk, 
+	//then modify only the part starting from the file’s offset with the user-supplied buffer, 
+	//before you can finally write the dirty block back to the disk.
 	return 0;
 
 }
