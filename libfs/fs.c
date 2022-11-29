@@ -399,6 +399,8 @@ int fs_write(int fd, void *buf, size_t count)
 
 int fs_read(int fd, void *buf, size_t count)
 {
+	
+	// First get the offstt calcualte the num blocks and num bytes to read.
         size_t offset = fd_arr[fd].offset;
 
          void *bounce_buffer = malloc(4096);
@@ -413,11 +415,15 @@ int fs_read(int fd, void *buf, size_t count)
         char *buffer_read = (char *)buf;
 
         int fat_idx = 0;
-
+	
+	
+	// Check if FD is valid or not
         if (fd == -1 || fd > 31 || buf == NULL|| count<= 0){
                         return -1;
         }
         int root_dir_number;
+	
+	//Find the fd witihin the rootdirectory entries
         for(int i = 0; i<128; i++){
 
                 if(strcmp(rootdir_array[i].file_name, fd_arr[fd].file_name) == 0){
@@ -428,10 +434,14 @@ int fs_read(int fd, void *buf, size_t count)
 
                 read_num_count = count;
 
+	//calcualte the numb of lbocks to reAD/
         size_t num_blocks_to_read = 1+ (count / 4096);
         int j = 0;
+	
         int fat_loop_idx = rootdir_array[root_dir_number].idx;
-        while(j < block_idx){
+       //block idx is offset/4096 how many block are in there
+	// In this while loop we figure out the idx of the data block that we are going to read
+	while(j < block_idx){
 
                 if(rootdir_array[root_dir_number].idx != FAT_EOC){
                         fat_loop_idx = flat_array[fat_loop_idx].data_block;
@@ -445,11 +455,14 @@ int fs_read(int fd, void *buf, size_t count)
 
         fat_idx = fat_loop_idx;
         int z = 0;
+	//  num_blocks_to_read = 1+ (count / 4096); we already calcualte that
         while(z < num_blocks_to_read){
+		// Block size is bigger number of blocks to read + count
                 if(BLOCK_SIZE >= num_blocks_to_read + read_num_count){
                         shift_count = count;
                  }
                  else{
+			 // Block size is less than number of bytes to read
                         shift_count = BLOCK_SIZE - read_num_count;
                  }
                  block_read(super_block->data_init_idx + fat_idx, (void*)bounce_buffer);
