@@ -35,6 +35,7 @@ struct __attribute__ ((__packed__)) superblock{
 //There are as many entries as data blocks in the disk.
 //first entry of the FAT (entry #0) is always invalid and contains the special FAT_EOC (End-of-Chain)
 //contents must be added to the data block start index in order to find the real block number on disk.
+// DUTY keeps track of both the free data blocks and the mapping between files and the data blocks holding their content.
 struct __attribute__ ((__packed__)) FAT{
     uint16_t data_block; //0 if free
 };
