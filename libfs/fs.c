@@ -31,10 +31,16 @@ struct __attribute__ ((__packed__)) superblock{
     uint8_t padding[4079];//	Unused/Padding
 };
 //8192 data blocks, the size of the FAT will be 8192 x 2 = 16384 bytes long, thus spanning 16384 / 4096 = 4 blocks.
+//The FAT is a flat arraywhich entries are composed of 16-bit unsigned words. 
+//There are as many entries as data blocks in the disk.
+//first entry of the FAT (entry #0) is always invalid and contains the special FAT_EOC (End-of-Chain)
+//contents must be added to the data block start index in order to find the real block number on disk.
 struct __attribute__ ((__packed__)) FAT{
     uint16_t data_block; //0 if free
 };
 
+//is an array of 128 entries stored in the block following the FAT. Each entry is 32-byte wide
+//The entry for an empty file size is 0, index of first data block would be FAT_EOC.
 
 struct __attribute__ ((__packed__)) rootdir{
     char file_name[16];//Filename (including NULL character)
