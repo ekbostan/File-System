@@ -95,7 +95,8 @@ int fs_mount(const char *diskname)
 
 }
 
-
+//fs_umount() makes sure that the virtual disk is properly closed 
+//and that all the internal data structures of the FS layer are properly cleaned.
 int fs_umount(void)
 {	
 	if(super_block == NULL){
