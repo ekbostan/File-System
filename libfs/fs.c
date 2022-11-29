@@ -1,12 +1,9 @@
-// FS Info:
-// total_blk_count=8198
-// fat_blk_count=4
-// rdir_blk=5
-// data_blk=6
-// data_blk_count=8192
-// fat_free_ratio=8191/8192
-// rdir_free_ratio=128/128
 
+//The file system is implemented on top of a virtual disk. This virtual disk is actually a simple binary file that is stored on the “real” file system provided by your computer.
+
+//Exactly like real hard drives which are split into sectors, the virtual disk is logically split into blocks. The first software layer involved in the file system implementation is the block API and is provided to you. This block API is used to open or close a virtual disk, and read or write entire blocks from it.
+
+//Above the block layer, the FS layer is in charge of the actual file system management. Through the FS layer, you can mount a virtual disk, list the files that are part of the disk, add or delete new files, read from files or write to file
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -26,24 +23,27 @@
 
 struct __attribute__ ((__packed__)) superblock{
     char sign[8];
-    uint16_t total_num_blocks;
-    uint16_t root_dir_idx;
-    uint16_t data_init_idx;
-    uint16_t num_data_blocks;
-    uint8_t num_FAT_blocks;
-    uint8_t padding[4079];
+    uint16_t total_num_blocks // Total amount of blocks of virtual disk;
+    uint16_t root_dir_idx;//Root directory block index
+    uint16_t data_init_idx;//Data block start index
+    uint16_t num_data_blocks;//	Amount of data blocks
+    uint8_t num_FAT_blocks;//Number of blocks for FAT
+    uint8_t padding[4079];//	Unused/Padding
 };
+//8192 data blocks, the size of the FAT will be 8192 x 2 = 16384 bytes long, thus spanning 16384 / 4096 = 4 blocks.
 struct __attribute__ ((__packed__)) FAT{
     uint16_t data_block; //0 if free
 };
+
+
 struct __attribute__ ((__packed__)) rootdir{
-    char file_name[16];
-    uint32_t file_size;
-    uint16_t idx;
-    uint8_t padding[10];
+    char file_name[16];//Filename (including NULL character)
+    uint32_t file_size;//Size of the file (in bytes)
+    uint16_t idx;//Index of the first data block
+    uint8_t padding[10];//Unused/Padding
 };
 struct __attribute__ ((__packed__)) fd{
-        char file_name[16];
+        char file_name[16];//Filename (including NULL character)
         uint16_t offset;
         int idx;
 
