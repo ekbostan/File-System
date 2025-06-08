@@ -14,4 +14,35 @@ READ	5	DATA	00000
 READ	4096	FILE	test_file
 CLOSE
 DELETE	file_fs
+
+# Test comprehensive write functionality
+CREATE	myfile.txt
+OPEN	myfile.txt
+WRITE	DATA	Hello World! This is a test file for comprehensive write testing.
+CLOSE
+LS
+
+# Test reading back the written data
+OPEN	myfile.txt
+READ	50	DATA	Hello World! This is a test file for comprehensive
+CLOSE
+
+# Test large file writing across blocks
+CREATE	large.dat
+OPEN	large.dat
+WRITE	FILE	test_file
+CLOSE
+INFO
+
+# Test file creation and basic operations
+CREATE	test.txt
+OPEN	test.txt
+WRITE	DATA	Testing write operations in filesystem module
+SEEK	0
+READ	40	DATA	Testing write operations in filesystem mo
+CLOSE
+DELETE	test.txt
+
+DELETE	myfile.txt
+DELETE	large.dat
 UMOUNT
