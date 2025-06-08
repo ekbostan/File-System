@@ -25,7 +25,7 @@
 
 struct __attribute__ ((__packed__)) superblock{
     char sign[8];
-    uint16_t total_num_blocks // Total amount of blocks of virtual disk;
+    uint16_t total_num_blocks; // Total amount of blocks of virtual disk
     uint16_t root_dir_idx;//Root directory block index
     uint16_t data_init_idx;//Data block start index
     uint16_t num_data_blocks;//	Amount of data blocks
@@ -425,7 +425,7 @@ int fs_read(int fd, void *buf, size_t count)
         if (fd == -1 || fd > 31 || buf == NULL|| count<= 0){
                         return -1;
         }
-        int root_dir_number;
+        int root_dir_number = -1;
 	
 	//Find the fd witihin the rootdirectory entries
         for(int i = 0; i<128; i++){
@@ -434,6 +434,10 @@ int fs_read(int fd, void *buf, size_t count)
                         root_dir_number = i;
                         break;
                 }
+        }
+        
+        if(root_dir_number == -1) {
+                return -1;
         }
 
                 read_num_count = count;
